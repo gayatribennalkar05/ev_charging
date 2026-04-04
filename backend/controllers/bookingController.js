@@ -14,10 +14,10 @@ const createBooking = async (req, res) => {
       vehicle_number
     } = req.body;
 
-    // Generate unique booking token
+    // Generate booking token
     const bookingToken = uuidv4().slice(0, 8).toUpperCase();
 
-    // ✅ FIXED QUERY (removed slot_id & user_ip)
+    // ✅ Correct query (no slot_id, no user_ip)
     const query = `
       INSERT INTO bookings 
       (booking_token, station_id, user_name, user_email, user_phone, vehicle_number, slot_date, start_time, end_time)
@@ -44,6 +44,7 @@ const createBooking = async (req, res) => {
 
   } catch (error) {
     console.error('createBooking error:', error);
+
     res.status(500).json({
       success: false,
       message: 'Booking failed. Please try again.'
