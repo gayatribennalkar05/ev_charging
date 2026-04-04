@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Use deployed backend URL
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL + '/api',
+  baseURL: 'https://ev-charging-smrf.onrender.com/api',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
