@@ -1,9 +1,8 @@
 import axios from 'axios';
 
-// All API calls go to the backend
-// "proxy": "http://localhost:5000" in package.json handles this
+// Use deployed backend URL
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: process.env.REACT_APP_API_URL + '/api',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
