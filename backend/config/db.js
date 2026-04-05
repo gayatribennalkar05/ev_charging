@@ -1,26 +1,18 @@
-const mysql = require('mysql2');
-require('dotenv').config();
+const mysql = require("mysql2");
 
-// Create connection pool (Railway only)
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "", // put your password if any
+  database: "ev_charging_db",
 });
 
-// Test connection
-pool.getConnection((err, connection) => {
+db.connect((err) => {
   if (err) {
-    console.error('❌ MySQL Connection Failed:', err.message);
+    console.error("❌ DB Connection Failed:", err);
   } else {
-    console.log('✅ MySQL Connected (Railway)');
-    connection.release();
+    console.log("✅ MySQL Connected");
   }
 });
 
-module.exports = pool.promise();
+module.exports = db;
