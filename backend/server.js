@@ -1,32 +1,63 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
+require("dotenv").config();
 
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
+
+const { securityHeaders } = require('./middleware/security');
+const stationRoutes = require('./routes/stationRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// DB
-const db = require("./config/db");
-
-// Routes
-const bookingRoutes = require("./routes/bookingRoutes");
-
-// ✅ MAIN ROUTE FIX
-app.use("/api/bookings", bookingRoutes);
-
-// Test route
-app.get("/", (req, res) => {
-  res.send("✅ Server running...");
-});
-
-// Start server
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+// ─── ✅ CORS FIX (IMPORTANT) ─────────────────
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// ─── Middleware ─────────────────────────────
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(securityHeaders);
+
+// ─── Health Check ───────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'EV Charging API is running!',
+    time: new Date().toISOString(),
+  });
 });
+
+// ─── ✅ ROUTES (VERY IMPORTANT) ──────────────
+app.use('/api', stationRoutes);
+app.use('/api', bookingRoutes);
+
+// ─── 404 Handler ────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found.`,
+  });
+});
+
+// ─── Error Handler ──────────────────────────
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+  });
+});
+
+// ─── Start Server ───────────────────────────
+app.listen(PORT, () => {
+  console.log('🔋 ================================');
+  console.log(`⚡ Server running on port ${PORT}`);
+  console.log(`🌐 http://localhost:${PORT}/api/health`);
+  console.log('🔋 ================================');
+});
+
+module.exports = app;
