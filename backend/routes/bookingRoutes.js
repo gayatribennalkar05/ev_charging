@@ -1,44 +1,52 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const db = require("../config/db");
+const db = require('../config/db');
 
-// ✅ POST booking
-router.post("/", (req, res) => {
-  const { full_name, email, mobile, vehicle_number, station, slot_time } = req.body;
+// ✅ CREATE BOOKING
+router.post('/bookings', async (req, res) => {
+  try {
+    const {
+      station_id,
+      slot_date,
+      start_time,
+      end_time,
+      name,
+      email,
+      phone,
+      vehicle_number,
+    } = req.body;
 
-  // Validation
-  if (!full_name || !email || !mobile || !vehicle_number) {
-    return res.status(400).json({
-      success: false,
-      message: "All fields are required",
-    });
-  }
-
-  const sql = `
-    INSERT INTO bookings 
-    (full_name, email, mobile, vehicle_number, station, slot_time)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
-  db.query(
-    sql,
-    [full_name, email, mobile, vehicle_number, station, slot_time],
-    (err, result) => {
-      if (err) {
-        console.error("❌ DB Error:", err);
-        return res.status(500).json({
-          success: false,
-          message: "Database error",
-        });
-      }
-
-      res.json({
-        success: true,
-        message: "✅ Booking successful",
-        booking_id: result.insertId,
+    // 🔴 validation
+    if (!station_id || !slot_date || !start_time || !end_time || !name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields',
       });
     }
-  );
+
+    const token = 'EV' + Math.floor(100000 + Math.random() * 900000);
+
+    // ✅ insert into DB
+    await db.query(
+      `INSERT INTO bookings 
+      (station_id, slot_date, start_time, end_time, name, email, phone, vehicle_number, token) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [station_id, slot_date, start_time, end_time, name, email, phone, vehicle_number, token]
+    );
+
+    res.json({
+      success: true,
+      message: 'Booking successful',
+      token,
+    });
+
+  } catch (error) {
+    console.error('Booking Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Booking failed',
+    });
+  }
 });
 
 module.exports = router;
